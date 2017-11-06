@@ -3,10 +3,12 @@ import bodyParser = require('body-parser');
 
 import { DatabaseService } from './src/db/database.service';
 import { UserService } from './src/user/user.service';
+import { addCorsHeader } from './src/utils/utils';
 
 const app = express();
 const routeFiles: string[] = [ 
     './src/user/routes.js',
+    './src/payment/routes.js'
 ]
 
 const databaseService = new DatabaseService;
@@ -18,13 +20,15 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.use(addCorsHeader);
+
 app.use((req, res, next) => { return userService.isAuthenticated(req, res, next, databaseService)});
 
 routeFiles.forEach(route => {
     app.use(require(route));
 });
 
-databaseService.connect("mongodb://localhost:27017/trivia").then(result => {
+databaseService.connect("mongodb://app:oo8ua7tM@ds149998.mlab.com:49998/quickdraw").then(result => {
     console.log(result);
     startApp();
   }).catch(err => {

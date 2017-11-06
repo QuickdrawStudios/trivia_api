@@ -13,9 +13,11 @@
     "@types/node": "^8.0.34"
   },
   "dependencies": {
+    "@types/stripe-node": "^4.7.1",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "jsonwebtoken": "^8.1.0",
-    "mongodb": "^2.2.31"
+    "mongodb": "^2.2.31",
+    "stripe": "^5.3.0"
   }
 }

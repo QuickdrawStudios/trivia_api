@@ -9,34 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const express = require("express");
 const database_service_1 = require("../db/database.service");
-const user_service_1 = require("./user.service");
+const payment_service_1 = require("./payment.service");
 module.exports = (() => {
     let router = express.Router();
     let databaseService = new database_service_1.DatabaseService();
-    let userService = new user_service_1.UserService(databaseService);
-    router.post('/user', (req, res) => __awaiter(this, void 0, void 0, function* () {
+    let paymentService = new payment_service_1.PaymentService(databaseService);
+    router.post('/subscribe', (req, res) => __awaiter(this, void 0, void 0, function* () {
         try {
-            let result = yield userService.create(req.body);
-            res.send(result);
-        }
-        catch (ex) {
-            let error = ex;
-            res.send(error);
-        }
-    }));
-    router.post('/login', (req, res) => __awaiter(this, void 0, void 0, function* () {
-        try {
-            let result = yield userService.authenticate(req.body);
-            res.send(result);
-        }
-        catch (ex) {
-            let error = ex;
-            res.send(error);
-        }
-    }));
-    router.get('/user', (req, res) => __awaiter(this, void 0, void 0, function* () {
-        try {
-            let result = yield userService.getAuthenticatedUser(res.locals.authenticatedUserId);
+            let result = yield paymentService.subscribePay(res.locals.authenticatedUserId, req.body);
             res.send(result);
         }
         catch (ex) {

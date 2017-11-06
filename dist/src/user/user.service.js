@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jwt = require("jsonwebtoken");
+const utils_1 = require("../utils/utils");
 class UserService {
     constructor(db) {
         this.db = db;
@@ -19,13 +20,14 @@ class UserService {
                 let newUser = {
                     email: json.email,
                     password: json.password,
-                    active: false
+                    active: false,
+                    stripeId: ''
                 };
                 let user = yield this.db.insertItem("users", newUser);
                 if (!user)
-                    return { "status": "error", "message": "REGISTRATION_FAILED" };
+                    return utils_1.buildResponse("REGISTRATION_FAILED", "error");
                 let token = jwt.sign({ user }, 'my_secret_key', { 'expiresIn': '4hr' });
-                return { "status": "ok", "message": token };
+                return utils_1.buildResponse(token);
             }
             catch (error) {
                 console.log(error);
@@ -36,10 +38,26 @@ class UserService {
     read(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                if (!userId)
+                    return utils_1.buildResponse('INVALID_USER', 'error');
                 let user = yield this.db.getItemById("users", userId);
                 if (!user)
-                    return { "status": "error", "message": "INVALID_USER" };
-                return { "status": "ok", "message": user };
+                    return utils_1.buildResponse("INVALID_USER", "error");
+                return utils_1.buildResponse(user);
+            }
+            catch (error) {
+                console.log(error);
+                return Promise.reject(error);
+            }
+        });
+    }
+    getAuthenticatedUser(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let user = yield this.db.getItemById("users", id);
+                if (!user)
+                    return utils_1.buildResponse("INVALID_USER", "error");
+                return utils_1.buildResponse(user);
             }
             catch (error) {
                 console.log(error);
@@ -52,12 +70,12 @@ class UserService {
             try {
                 let user = yield this.db.lookupItem('users', { "email": json.email });
                 if (!user)
-                    return { "status": "error", "message": "INVALID_USER" };
+                    return utils_1.buildResponse("INVALID_USER", "error");
                 if (user.password != json.password)
-                    return { "status": "error", "message": "WRONG_PASSWORD" };
+                    return utils_1.buildResponse("INCORRECT PASSWORD", "error");
                 let token = jwt.sign({ user }, 'my_secret_key', { 'expiresIn': '4hr' });
                 let authResponse = { "token": token, "active": user.active };
-                return { "status": "ok", "message": authResponse };
+                return utils_1.buildResponse(authResponse);
             }
             catch (error) {
                 console.log(error);
@@ -73,19 +91,20 @@ class UserService {
                     let decodedJwt = jwt.verify(token, 'my_secret_key');
                     let user = yield this.db.getItemById("users", decodedJwt.user._id);
                     if (!user)
-                        return res.send({ "status": "error", "message": "NOT AUTHORIZED" });
+                        return res.send(utils_1.buildResponse("NOT_AUTHORIZED", "error"));
                     res.locals.authenticatedUserId = decodedJwt.user._id;
                     return next();
                 }
                 else {
                     if ((req.path == '/login' || req.path == '/user') && req.method == 'POST')
                         return next();
-                    return res.send({ "status": "error", "message": "NOT AUTHORIZED" });
+                    return res.send(utils_1.buildResponse("NOT_AUTHROIZED", "error"));
                 }
             }
             catch (error) {
                 console.log(error);
-                return Promise.reject(error);
+                return res.send(utils_1.buildResponse("NOT_AUTHROIZED", "error"));
+                //return Promise.reject(error);
             }
         });
     }

@@ -46,5 +46,22 @@ class DatabaseService {
             });
         });
     }
+    updateItem(object, id, json) {
+        return new Promise(function (resolve, reject) {
+            let mongoId = new mongoID.createFromHexString(id);
+            let query = { "_id": mongoId };
+            let items = new Object;
+            Object.keys(json).forEach(key => {
+                if (key != "_id" && key != "id") {
+                    items[key] = json[key];
+                }
+            });
+            db.collection(object).update(query, { $set: items }, (err, result) => {
+                if (err)
+                    return reject(err);
+                return resolve(result);
+            });
+        });
+    }
 }
 exports.DatabaseService = DatabaseService;
